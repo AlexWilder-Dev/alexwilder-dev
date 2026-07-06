@@ -3,14 +3,20 @@ export default function SectionHead({
   name,
   title,
   support,
+  tight = false,
 }: {
   index: string;
   name: string;
   title: string;
   support?: string;
+  tight?: boolean;
 }) {
   return (
-    <div className="mb-14 flex items-end justify-between gap-6 md:mb-20">
+    <div
+      className={`flex items-end justify-between gap-6 ${
+        tight ? "mb-8 md:mb-10" : "mb-14 md:mb-20"
+      }`}
+    >
       <div data-reveal>
         <p className="anno">
         {index} — {name}

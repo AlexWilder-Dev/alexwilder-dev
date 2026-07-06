@@ -12,31 +12,39 @@ export default function Contact() {
     const root = rootRef.current;
     if (!root) return;
     const gctx = gsap.context(() => {
-      const tl = gsap.timeline({
-        scrollTrigger: { trigger: root, start: "top 70%", once: true },
-      });
-      tl.from("[data-reveal]", {
-        autoAlpha: 0,
-        y: 22,
-        duration: 0.7,
-        stagger: 0.15,
-        ease: "power3.out",
-      })
-        /* the second and final stamp */
-        .from(
-          ".cta-seal .seal",
-          { scale: 1.6, rotate: -12, autoAlpha: 0, duration: 0.5, ease: "back.out(1.9)" },
-          0.6,
-        );
+      gsap.fromTo(
+        "[data-reveal]",
+        { autoAlpha: 0, y: 22 },
+        {
+          autoAlpha: 1,
+          y: 0,
+          stagger: 0.15,
+          ease: "none",
+          scrollTrigger: { trigger: root, start: "top 78%", end: "top 35%", scrub: 0.7 },
+        },
+      );
+      /* the second stamp: pressed by the scroll as the thread arrives */
+      gsap.fromTo(
+        ".cta-seal .seal",
+        { scale: 1.45, rotate: -9, autoAlpha: 0 },
+        {
+          scale: 1,
+          rotate: 0,
+          autoAlpha: 1,
+          ease: "none",
+          scrollTrigger: { trigger: root, start: "top 60%", end: "top 30%", scrub: 0.6 },
+        },
+      );
     }, root);
     return () => gctx.revert();
   }, []);
 
   return (
+    // no border-t: the thread carries the eye from the portrait straight in
     <section
       ref={rootRef}
       id="contact"
-      className="border-t border-ink/15 px-6 py-28 md:px-10 md:py-40"
+      className="px-6 py-28 md:px-10 md:py-40"
     >
       <div className="mx-auto max-w-[74rem]">
         <div className="flex items-start justify-between" data-reveal>
@@ -54,6 +62,7 @@ export default function Contact() {
 
         <a
           href="mailto:alex@alexwilder.dev"
+          data-thread="seal"
           className="cta-seal group mt-12 inline-flex items-center gap-7"
           data-reveal
         >

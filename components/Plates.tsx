@@ -1,8 +1,11 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { gsap, prefersReduced } from "@/lib/anim";
+import { drawThread, gsap } from "@/lib/anim";
+import type { Pt } from "@/lib/sketch";
+import { threadX } from "@/lib/thread";
 import SectionHead from "./SectionHead";
+import ThreadSeg from "./ThreadSeg";
 
 /* wireframe path builders — everything is a <path> so pathLength/dash
    drawing works identically across browsers */
@@ -160,68 +163,9 @@ function Leader({ flipped }: { flipped: boolean }) {
   );
 }
 
-function Plate({ p }: { p: PlateData }) {
-  const ref = useRef<HTMLElement>(null);
-
-  useEffect(() => {
-    if (prefersReduced()) return;
-    const el = ref.current;
-    if (!el) return;
-
-    const gctx = gsap.context(() => {
-      const tl = gsap.timeline({
-        scrollTrigger: { trigger: el, start: "top 70%", once: true },
-      });
-      tl.from(".plate-head", { autoAlpha: 0, y: 18, duration: 0.55 })
-        .from(
-          ".dim path",
-          { strokeDashoffset: 1, duration: 0.45, stagger: 0.08, ease: "power2.out" },
-          0.1,
-        )
-        .from(
-          ".wire path",
-          {
-            strokeDashoffset: 1,
-            duration: 0.8,
-            stagger: 0.014,
-            ease: "power1.inOut",
-          },
-          0.15,
-        )
-        .from(
-          ".callout",
-          { autoAlpha: 0, y: 10, duration: 0.45, stagger: 0.15 },
-          0.65,
-        )
-        .from(
-          ".leader path",
-          { strokeDashoffset: 1, duration: 0.4, stagger: 0.1 },
-          0.7,
-        )
-        .from(".marker", { autoAlpha: 0, scale: 0.4, duration: 0.3, stagger: 0.12 }, 0.8)
-        /* …then ink: the plate resolves from underlay to iron-gall */
-        .fromTo(
-          [".plate-frame", ".plate-chrome"],
-          { borderColor: "rgba(127,180,214,0.75)" },
-          { borderColor: "#1C1B18", duration: 0.55 },
-          1.05,
-        )
-        .fromTo(
-          ".plate-title",
-          { color: "#3E6B8A" },
-          { color: "#1C1B18", duration: 0.55 },
-          1.1,
-        );
-    }, el);
-
-    return () => gctx.revert();
-  }, []);
-
+function PlateBody({ p }: { p: PlateData }) {
   return (
-    <article
-      ref={ref}
-      className="grid items-start gap-8 md:grid-cols-12 md:gap-12"
-    >
+    <article className="grid items-start gap-8 md:grid-cols-12 md:gap-12">
       <div className={`md:col-span-8 ${p.flip ? "md:order-2" : ""}`}>
         <div className="plate-head mb-6">
           <div className="flex items-center gap-4">
@@ -248,46 +192,48 @@ function Plate({ p }: { p: PlateData }) {
           <p className="mt-2 max-w-[56ch] text-ink-soft">{p.brief}</p>
         </div>
 
-        <div className="plate-frame border-[1.5px] border-ink">
-          <div className="plate-chrome flex items-center gap-1.5 border-b-[1.5px] border-ink px-3 py-2.5">
-            <span className="h-2 w-2 border border-ink/60" aria-hidden="true" />
-            <span className="h-2 w-2 border border-ink/60" aria-hidden="true" />
-            <span className="h-2 w-2 border border-ink/60" aria-hidden="true" />
-            <span className="anno ml-3 normal-case">{p.url}</span>
-          </div>
-          <div className="relative aspect-[16/10]">
-            {/* TODO: replace with real screenshot */}
-            <svg
-              viewBox="0 0 800 500"
-              className="wire absolute inset-0 h-full w-full"
-              aria-hidden="true"
-              fill="none"
-              stroke="var(--color-underlay)"
-              strokeWidth={1.4}
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              opacity={0.85}
-            >
-              {p.wire.map((d) => (
-                <path key={d} d={d} pathLength={1} />
-              ))}
-            </svg>
-            {p.callouts.map((c) => (
+        <div className="plate-fit">
+          <div className="plate-frame border-[1.5px] border-ink">
+            <div className="plate-chrome flex items-center gap-1.5 border-b-[1.5px] border-ink px-3 py-2.5">
+              <span className="h-2 w-2 border border-ink/60" aria-hidden="true" />
+              <span className="h-2 w-2 border border-ink/60" aria-hidden="true" />
+              <span className="h-2 w-2 border border-ink/60" aria-hidden="true" />
+              <span className="anno ml-3 normal-case">{p.url}</span>
+            </div>
+            <div className="relative aspect-[16/10]">
+              {/* TODO: replace with real screenshot */}
               <svg
-                key={c.text}
-                viewBox="0 0 12 12"
-                width="12"
-                height="12"
-                className="marker absolute hidden md:block"
-                style={{ left: `${c.mx}%`, top: `${c.my}%` }}
+                viewBox="0 0 800 500"
+                className="wire absolute inset-0 h-full w-full"
                 aria-hidden="true"
-                stroke="var(--color-anno)"
-                strokeWidth={1.6}
+                fill="none"
+                stroke="var(--color-underlay)"
+                strokeWidth={1.4}
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                opacity={0.85}
               >
-                <path d="M2 2 L10 10" />
-                <path d="M10 2 L2 10" />
+                {p.wire.map((d) => (
+                  <path key={d} d={d} pathLength={1} />
+                ))}
               </svg>
-            ))}
+              {p.callouts.map((c) => (
+                <svg
+                  key={c.text}
+                  viewBox="0 0 12 12"
+                  width="12"
+                  height="12"
+                  className="marker absolute hidden md:block"
+                  style={{ left: `${c.mx}%`, top: `${c.my}%` }}
+                  aria-hidden="true"
+                  stroke="var(--color-anno)"
+                  strokeWidth={1.6}
+                >
+                  <path d="M2 2 L10 10" />
+                  <path d="M10 2 L2 10" />
+                </svg>
+              ))}
+            </div>
           </div>
         </div>
       </div>
@@ -314,44 +260,191 @@ function Plate({ p }: { p: PlateData }) {
   );
 }
 
+/* blue lines first, then ink, then the frame settles — one plate, ~1.6 units */
+function plateAssembly(el: Element): gsap.core.Timeline {
+  const q = (s: string) => el.querySelectorAll(s);
+  const tl = gsap.timeline({ defaults: { ease: "none" } });
+  tl.fromTo(q(".plate-head"), { autoAlpha: 0, y: 22 }, { autoAlpha: 1, y: 0, duration: 0.35 }, 0)
+    .fromTo(
+      q(".dim path"),
+      { strokeDashoffset: 1 },
+      { strokeDashoffset: 0, duration: 0.22, stagger: 0.05 },
+      0.05,
+    )
+    .fromTo(
+      q(".wire path"),
+      { strokeDashoffset: 1 },
+      { strokeDashoffset: 0, duration: 0.85, stagger: 0.012 },
+      0.15,
+    )
+    .fromTo(
+      q(".callout"),
+      { autoAlpha: 0, y: 12 },
+      { autoAlpha: 1, y: 0, duration: 0.3, stagger: 0.12 },
+      0.7,
+    )
+    .fromTo(
+      q(".leader path"),
+      { strokeDashoffset: 1 },
+      { strokeDashoffset: 0, duration: 0.3, stagger: 0.08 },
+      0.75,
+    )
+    .fromTo(
+      q(".marker"),
+      { autoAlpha: 0, scale: 0.4 },
+      { autoAlpha: 1, scale: 1, duration: 0.2, stagger: 0.1 },
+      0.9,
+    )
+    .fromTo(
+      q(".plate-frame, .plate-chrome"),
+      { borderColor: "rgba(127,180,214,0.75)" },
+      { borderColor: "#1C1B18", duration: 0.4 },
+      1.1,
+    )
+    .fromTo(
+      q(".plate-title"),
+      { color: "#3E6B8A" },
+      { color: "#1C1B18", duration: 0.4 },
+      1.15,
+    )
+    .fromTo(
+      q(".plate-frame"),
+      { y: 16, rotate: 0.4 },
+      { y: 0, rotate: 0, duration: 0.45, ease: "power1.out" },
+      1.15,
+    );
+  return tl;
+}
+
+/* the thread weaves behind the plates while they assemble and hand off */
+const platesAnchors = (w: number, h: number): Pt[] => {
+  const tx = threadX(w);
+  if (w < 768) {
+    return [
+      { x: tx, y: 0 },
+      { x: tx + 10, y: h * 0.5 },
+      { x: tx, y: h },
+    ];
+  }
+  /* dives behind the opaque frame, loops the right margin, recrosses under
+     the callouts — fully exposed only while plates hand off */
+  return [
+    { x: tx, y: 0 },
+    { x: tx, y: h * 0.45 },
+    { x: w * 0.55, y: h * 0.68 },
+    { x: w - 30, y: h * 0.64 },
+    { x: w - 26, y: h * 0.32 },
+    { x: w - 34, y: h * 0.7 },
+    { x: w * 0.45, y: h * 0.78 },
+    { x: tx + 8, y: h * 0.88 },
+    { x: tx, y: h },
+  ];
+};
+
 export default function Plates() {
-  const rootRef = useRef<HTMLElement>(null);
+  const wrapRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (prefersReduced()) return;
-    const root = rootRef.current;
-    if (!root) return;
-    const gctx = gsap.context(() => {
-      gsap.from("[data-reveal]", {
-        autoAlpha: 0,
-        y: 20,
-        duration: 0.7,
-        ease: "power3.out",
-        scrollTrigger: { trigger: root, start: "top 75%", once: true },
+    const wrap = wrapRef.current;
+    if (!wrap) return;
+    const slides = Array.from(wrap.querySelectorAll(".plate-inner"));
+    const threadPaths = wrap.querySelectorAll(".thread path");
+
+    const mm = gsap.matchMedia(wrap);
+
+    mm.add("(min-width: 48rem) and (prefers-reduced-motion: no-preference)", () => {
+      gsap.fromTo(
+        wrap.querySelectorAll("[data-reveal]"),
+        { autoAlpha: 0, y: 20 },
+        {
+          autoAlpha: 1,
+          y: 0,
+          ease: "none",
+          scrollTrigger: { trigger: wrap, start: "top 85%", end: "top 45%", scrub: 0.6 },
+        },
+      );
+
+      const master = gsap.timeline({
+        defaults: { ease: "none" },
+        scrollTrigger: {
+          trigger: wrap,
+          start: "top 75%",
+          end: "bottom bottom",
+          scrub: 0.5,
+        },
       });
-    }, root);
-    return () => gctx.revert();
+      master.add(drawThread(threadPaths, { duration: 7.6 }), 0);
+      // plate 1 assembles; releases as plate 2 enters; and again for plate 3
+      master.add(plateAssembly(slides[0]), 0.3);
+      master.to(slides[0], { autoAlpha: 0, y: -60, duration: 0.4 }, 2.3);
+      master.fromTo(
+        slides[1],
+        { autoAlpha: 0, y: 80 },
+        { autoAlpha: 1, y: 0, duration: 0.4 },
+        2.55,
+      );
+      master.add(plateAssembly(slides[1]), 2.85);
+      master.to(slides[1], { autoAlpha: 0, y: -60, duration: 0.4 }, 4.85);
+      master.fromTo(
+        slides[2],
+        { autoAlpha: 0, y: 80 },
+        { autoAlpha: 1, y: 0, duration: 0.4 },
+        5.1,
+      );
+      master.add(plateAssembly(slides[2]), 5.4);
+      // remaining scroll lets the thread finish its exit while plate 3 holds
+    });
+
+    mm.add("(max-width: 47.99rem) and (prefers-reduced-motion: no-preference)", () => {
+      drawThread(threadPaths, {
+        scrollTrigger: { trigger: wrap, start: "top 80%", end: "bottom 95%", scrub: 0.6 },
+      });
+      slides.forEach((el) => {
+        gsap
+          .timeline({
+            scrollTrigger: { trigger: el, start: "top 82%", end: "top 28%", scrub: 0.7 },
+          })
+          .add(plateAssembly(el));
+      });
+    });
+
+    return () => mm.revert();
   }, []);
 
   return (
-    <section
-      ref={rootRef}
-      id="plates"
-      className="border-t border-ink/15 px-6 py-24 md:px-10 md:py-32"
-    >
-      <div className="mx-auto max-w-[74rem]">
-        <SectionHead
-          index="03"
-          name="SELECTED WORK"
-          title="The plates."
-          support="Three recent builds, drawn to scale. Screen captures pending — the linework holds their place."
+    <div ref={wrapRef} className="stage-wrap-plates">
+      <section
+        id="plates"
+        className="stage-sticky relative border-t border-ink/15 px-6 py-24 md:px-10 md:py-32"
+      >
+        <ThreadSeg
+          seed={57}
+          from={0.34}
+          to={0.68}
+          anchors={platesAnchors}
+          className="-z-[1]"
         />
-        <div className="space-y-24 md:space-y-32">
-          {PLATES.map((p) => (
-            <Plate key={p.n} p={p} />
-          ))}
+        <div className="stage-center mx-auto w-full max-w-[74rem]">
+          <div className="stage-pad">
+            <SectionHead
+              tight
+              index="03"
+              name="SELECTED WORK"
+              title="The plates."
+              support="Three recent builds, drawn to scale. Screen captures pending — the linework holds their place."
+            />
+          </div>
+          <div className="plates-track">
+            {PLATES.map((p) => (
+              <div key={p.n} className="plate-slide">
+                <div className="plate-inner w-full">
+                  <PlateBody p={p} />
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
-      </div>
-    </section>
+      </section>
+    </div>
   );
 }

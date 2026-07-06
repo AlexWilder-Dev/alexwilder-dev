@@ -21,24 +21,26 @@ export default function About() {
     const root = rootRef.current;
     if (!root) return;
     const gctx = gsap.context(() => {
-      const tl = gsap.timeline({
-        scrollTrigger: { trigger: root, start: "top 72%", once: true },
-      });
-      tl.from("[data-reveal]", {
-        autoAlpha: 0,
-        y: 20,
-        duration: 0.7,
-        stagger: 0.12,
-        ease: "power3.out",
-      }).from(
-        ".wire path",
+      gsap.fromTo(
+        "[data-reveal]",
+        { autoAlpha: 0, y: 20 },
         {
-          strokeDashoffset: 1,
-          duration: 0.7,
-          stagger: 0.08,
-          ease: "power1.inOut",
+          autoAlpha: 1,
+          y: 0,
+          stagger: 0.12,
+          ease: "none",
+          scrollTrigger: { trigger: root, start: "top 85%", end: "top 40%", scrub: 0.7 },
         },
-        0.25,
+      );
+      gsap.fromTo(
+        ".wire path",
+        { strokeDashoffset: 1 },
+        {
+          strokeDashoffset: 0,
+          stagger: 0.09,
+          ease: "none",
+          scrollTrigger: { trigger: root, start: "top 80%", end: "top 30%", scrub: 0.7 },
+        },
       );
     }, root);
     return () => gctx.revert();
@@ -59,7 +61,10 @@ export default function About() {
         </div>
         <div className="grid items-start gap-12 md:grid-cols-12">
         <div className="md:col-span-4" data-reveal>
-          <div className="relative aspect-[4/5] max-w-[19rem] border border-ink/40">
+          <div
+            data-thread="portrait"
+            className="relative aspect-[4/5] max-w-[19rem] border border-ink/40"
+          >
             {/* TODO: replace with real portrait */}
             <svg
               viewBox="0 0 300 375"
@@ -78,7 +83,7 @@ export default function About() {
             <span className="absolute left-2 top-2 h-3 w-3 border-l border-t border-anno" aria-hidden="true" />
             <span className="absolute bottom-2 right-2 h-3 w-3 border-b border-r border-anno" aria-hidden="true" />
           </div>
-          <p className="anno mt-3 text-[0.62rem]">
+          <p className="anno mt-6 text-[0.62rem]">
             PORTRAIT — TO FOLLOW · GRAPHITE, 2026
           </p>
         </div>

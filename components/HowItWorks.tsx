@@ -1,8 +1,11 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { gsap, prefersReduced } from "@/lib/anim";
+import { drawThread, gsap } from "@/lib/anim";
+import type { Pt } from "@/lib/sketch";
+import { threadX } from "@/lib/thread";
 import SectionHead from "./SectionHead";
+import ThreadSeg from "./ThreadSeg";
 
 interface Step {
   n: string;
@@ -65,131 +68,170 @@ const STEPS: Step[] = [
   },
 ];
 
+/* thread route: down the margin, through the three step diamonds, out
+   toward the margin again — measured off the real diamond positions */
+const methodAnchors = (w: number, h: number, root: HTMLElement): Pt[] => {
+  const tx = threadX(w);
+  const rr = root.getBoundingClientRect();
+  const dias = Array.from(root.querySelectorAll(".step-diamond")).map((el) => {
+    const r = el.getBoundingClientRect();
+    return { x: r.left - rr.left + r.width / 2, y: r.top - rr.top + r.height / 2 };
+  });
+  if (dias.length < 3) return [{ x: tx, y: 0 }, { x: tx, y: h }];
+  if (w < 768) {
+    return [{ x: tx, y: 0 }, ...dias, { x: tx, y: h }];
+  }
+  return [
+    { x: tx, y: 0 },
+    { x: tx, y: dias[0].y - 70 },
+    { x: dias[0].x - 46, y: dias[0].y },
+    ...dias,
+    // exit through the right margin, clear of the step copy
+    { x: w - 30, y: dias[2].y + 70 },
+    { x: w - 36, y: h * 0.8 },
+    { x: w * 0.5, y: h * 0.95 },
+    { x: tx, y: h },
+  ];
+};
+
 export default function HowItWorks() {
-  const rootRef = useRef<HTMLElement>(null);
+  const wrapRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (prefersReduced()) return;
-    const root = rootRef.current;
-    if (!root) return;
+    const wrap = wrapRef.current;
+    if (!wrap) return;
 
-    const gctx = gsap.context(() => {
-      gsap.from("[data-reveal]", {
-        autoAlpha: 0,
-        y: 20,
-        duration: 0.7,
-        ease: "power3.out",
-        scrollTrigger: { trigger: root, start: "top 75%", once: true },
-      });
-      // the rail is vertical on mobile, horizontal from md up — draw along its axis
-      const vertical = window.matchMedia("(max-width: 767px)").matches;
-      gsap.from(".dim-run", {
-        ...(vertical ? { scaleY: 0 } : { scaleX: 0 }),
-        transformOrigin: "left top",
-        duration: 0.9,
-        ease: "power2.inOut",
-        scrollTrigger: { trigger: ".steps", start: "top 78%", once: true },
-      });
-      gsap.utils.toArray<HTMLElement>(".step").forEach((step) => {
-        const tl = gsap.timeline({
-          scrollTrigger: { trigger: step, start: "top 78%", once: true },
-        });
-        tl.from(step.querySelector(".step-diamond"), {
-          scale: 0,
-          duration: 0.35,
-          ease: "back.out(2)",
-        })
-          .from(
+    const buildTl = (vars: gsap.TimelineVars) => {
+      const tl = gsap.timeline(vars);
+      tl.add(drawThread(wrap.querySelectorAll(".thread path"), { duration: 10 }), 0);
+      // pops timed to the thread tip's arrival at each diamond (~18/33/48%)
+      wrap.querySelectorAll<HTMLElement>(".step").forEach((step, i) => {
+        const at = 1.7 + i * 1.5;
+        tl.fromTo(
+          step.querySelector(".step-diamond"),
+          { scale: 0 },
+          { scale: 1, duration: 0.25, ease: "back.out(2)" },
+          at,
+        )
+          .fromTo(
             step.querySelectorAll(".pg-sketch path"),
-            {
-              strokeDashoffset: 1,
-              duration: 0.55,
-              stagger: 0.07,
-              ease: "power1.inOut",
-            },
-            0.1,
+            { strokeDashoffset: 1 },
+            { strokeDashoffset: 0, duration: 0.8, stagger: 0.07, ease: "none" },
+            at + 0.15,
           )
-          .from(
+          .fromTo(
             step.querySelectorAll(".pg-ink path"),
-            {
-              strokeDashoffset: 1,
-              duration: 0.5,
-              stagger: 0.12,
-              ease: "power2.inOut",
-            },
-            ">-0.1",
+            { strokeDashoffset: 1 },
+            { strokeDashoffset: 0, duration: 0.6, stagger: 0.12, ease: "none" },
+            at + 0.85,
           )
-          .from(
+          .fromTo(
             step.querySelectorAll(".step-copy > *"),
-            { autoAlpha: 0, y: 14, duration: 0.5, stagger: 0.08 },
-            0.35,
+            { autoAlpha: 0, y: 16 },
+            { autoAlpha: 1, y: 0, duration: 0.5, stagger: 0.08, ease: "none" },
+            at + 0.5,
           );
       });
-    }, root);
+      return tl;
+    };
 
-    return () => gctx.revert();
+    const mm = gsap.matchMedia(wrap);
+    mm.add("(min-width: 48rem) and (prefers-reduced-motion: no-preference)", () => {
+      buildTl({
+        scrollTrigger: {
+          trigger: wrap,
+          start: "top 70%",
+          end: "bottom bottom",
+          scrub: 0.5,
+        },
+      });
+      gsap.fromTo(
+        wrap.querySelectorAll("[data-reveal]"),
+        { autoAlpha: 0, y: 20 },
+        {
+          autoAlpha: 1,
+          y: 0,
+          ease: "none",
+          scrollTrigger: { trigger: wrap, start: "top 85%", end: "top 45%", scrub: 0.6 },
+        },
+      );
+    });
+    mm.add("(max-width: 47.99rem) and (prefers-reduced-motion: no-preference)", () => {
+      buildTl({
+        scrollTrigger: {
+          trigger: wrap,
+          start: "top 78%",
+          end: "bottom 92%",
+          scrub: 0.6,
+        },
+      });
+    });
+    return () => mm.revert();
   }, []);
 
   return (
-    <section
-      ref={rootRef}
-      id="how"
-      className="border-t border-ink/15 px-6 py-24 md:px-10 md:py-32"
-    >
-      <div className="mx-auto max-w-[74rem]">
-        <SectionHead
-          index="02"
-          name="METHOD"
-          title="How this works."
-          support="Three steps. No contract until the last one."
+    <div ref={wrapRef} className="stage-wrap-method">
+      <section
+        id="how"
+        className="stage-sticky relative border-t border-ink/15 px-6 py-24 md:px-10 md:py-32"
+      >
+        <ThreadSeg
+          seed={31}
+          from={0.1}
+          to={0.34}
+          anchors={methodAnchors}
+          className="-z-[1]"
         />
-
-        <div className="steps relative">
-          {/* dimension run: vertical rail on mobile, horizontal datum on desktop */}
-          <span
-            className="dim-run absolute left-[5px] top-0 h-full w-px bg-underlay md:left-0 md:top-[5px] md:h-px md:w-full"
-            aria-hidden="true"
+        <div className="stage-center mx-auto w-full max-w-[74rem]">
+          <SectionHead
+            index="02"
+            name="METHOD"
+            title="How this works."
+            support="Three steps. No contract until the last one."
           />
-          <ol className="grid gap-14 md:grid-cols-3 md:gap-10">
-            {STEPS.map((s) => (
-              <li key={s.n} className="step relative pl-10 md:pl-0 md:pt-10">
-                <span
-                  className="step-diamond absolute left-0 top-1 block h-2.5 w-2.5 rotate-45 border border-anno bg-paper md:top-0"
-                  aria-hidden="true"
-                />
-                <svg
-                  viewBox="0 0 120 120"
-                  className="h-24 w-24"
-                  aria-hidden="true"
-                  fill="none"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <g
-                    className="pg-sketch"
-                    stroke="var(--color-underlay)"
-                    strokeWidth={1.4}
+
+          <div className="steps relative">
+            <ol className="grid gap-14 md:grid-cols-3 md:gap-10">
+              {STEPS.map((s) => (
+                <li key={s.n} className="step relative pl-10 md:pl-0 md:pt-10">
+                  <span
+                    className="step-diamond absolute left-0 top-1 block h-2.5 w-2.5 rotate-45 border border-anno bg-paper md:top-0"
+                    aria-hidden="true"
+                  />
+                  <svg
+                    viewBox="0 0 120 120"
+                    className="h-24 w-24"
+                    aria-hidden="true"
+                    fill="none"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
                   >
-                    {s.sketch.map((d) => (
-                      <path key={d} d={d} pathLength={1} />
-                    ))}
-                  </g>
-                  <g className="pg-ink" stroke="var(--color-ink)" strokeWidth={2.6}>
-                    {s.ink.map((d) => (
-                      <path key={d} d={d} pathLength={1} />
-                    ))}
-                  </g>
-                </svg>
-                <div className="step-copy mt-5">
-                  <p className="anno">STEP {s.n}</p>
-                  <h3 className="display mt-2 text-2xl italic">{s.title}</h3>
-                  <p className="mt-3 max-w-[38ch] text-ink-soft">{s.copy}</p>
-                </div>
-              </li>
-            ))}
-          </ol>
+                    <g
+                      className="pg-sketch"
+                      stroke="var(--color-underlay)"
+                      strokeWidth={1.4}
+                    >
+                      {s.sketch.map((d) => (
+                        <path key={d} d={d} pathLength={1} />
+                      ))}
+                    </g>
+                    <g className="pg-ink" stroke="var(--color-ink)" strokeWidth={2.6}>
+                      {s.ink.map((d) => (
+                        <path key={d} d={d} pathLength={1} />
+                      ))}
+                    </g>
+                  </svg>
+                  <div className="step-copy mt-5">
+                    <p className="anno">STEP {s.n}</p>
+                    <h3 className="display mt-2 text-2xl italic">{s.title}</h3>
+                    <p className="mt-3 max-w-[38ch] text-ink-soft">{s.copy}</p>
+                  </div>
+                </li>
+              ))}
+            </ol>
+          </div>
         </div>
-      </div>
-    </section>
+      </section>
+    </div>
   );
 }

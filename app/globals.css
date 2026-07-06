@@ -60,7 +60,8 @@ body {
 /* ---- drafting-sheet ground: fixed construction grid, ~6% presence ---- */
 .sheet-grid {
   position: fixed;
-  inset: 0;
+  /* oversized so the scroll-scrubbed parallax drift never exposes an edge */
+  inset: -90px 0;
   z-index: -10;
   pointer-events: none;
   background-image: linear-gradient(
@@ -190,9 +191,59 @@ body {
 .leader path,
 .dim path,
 .pg-sketch path,
-.pg-ink path {
+.pg-ink path,
+.thread path,
+.amb path {
   stroke-dasharray: 1;
   stroke-dashoffset: 0; /* final state: fully drawn (no-JS / reduced-motion) */
+}
+
+/* ---- pinned stages: sticky viewports, only where motion is welcome ----
+   default (mobile / reduced motion / no JS) is normal document stacking */
+@media (min-width: 48rem) and (prefers-reduced-motion: no-preference) {
+  .stage-wrap-method {
+    height: 190svh;
+  }
+  .stage-wrap-plates {
+    height: 460svh;
+  }
+  .stage-sticky {
+    position: sticky;
+    top: 0;
+    height: 100svh;
+    overflow: hidden;
+    padding-block: 0;
+  }
+  .stage-sticky .stage-center {
+    display: flex;
+    height: 100%;
+    flex-direction: column;
+    justify-content: center;
+  }
+  .stage-sticky .stage-pad {
+    padding-top: 4.5rem;
+  }
+  .stage-sticky .plates-track {
+    position: relative;
+    flex: 1 1 auto;
+    min-height: 0;
+  }
+  .stage-sticky .plate-slide {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+  }
+  .stage-sticky .plate-slide + .plate-slide {
+    margin-top: 0;
+  }
+  /* keep a full plate inside the sticky viewport on shorter screens */
+  .stage-sticky .plate-fit {
+    max-width: min(100%, calc((100svh - 30rem) * 1.6));
+  }
+}
+.plate-slide + .plate-slide {
+  margin-top: 7rem;
 }
 
 /* ---- hero pre-hide: only when JS is live AND motion is welcome ---- */
@@ -234,6 +285,8 @@ body {
 
 /* ---- plate frame lift ---- */
 .plate-frame {
+  /* opaque so the thread weaves behind the plates, not through them */
+  background: var(--color-paper);
   transition:
     translate 180ms ease,
     box-shadow 180ms ease;

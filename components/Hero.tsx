@@ -143,6 +143,29 @@ export default function Hero() {
       );
       tl.to(".hero-skip", { autoAlpha: 0, duration: 0.3 }, at(0.95));
 
+      /* exit scrub: the underlay recedes as you leave the sheet — the load
+         sequence above is untouched, this only choreographs the hand-off */
+      gsap.to(canvas, {
+        autoAlpha: 0.3,
+        ease: "none",
+        scrollTrigger: {
+          trigger: root,
+          start: "top top",
+          end: "bottom 30%",
+          scrub: 0.5,
+        },
+      });
+      gsap.to("[data-hero-drift]", {
+        yPercent: -7,
+        ease: "none",
+        scrollTrigger: {
+          trigger: root,
+          start: "top top",
+          end: "bottom 30%",
+          scrub: 0.5,
+        },
+      });
+
       const skip = () => {
         if (tl.progress() < 1) tl.progress(1);
       };
@@ -203,7 +226,10 @@ export default function Hero() {
         </a>
       </header>
 
-      <div className="relative z-10 flex min-h-[100svh] flex-col justify-end px-6 pb-24 pt-28 md:px-14 md:pb-28">
+      <div
+        data-hero-drift
+        className="relative z-10 flex min-h-[100svh] flex-col justify-end px-6 pb-24 pt-28 md:px-14 md:pb-28"
+      >
         <div className="max-w-[46rem]">
           <div className="relative inline-block">
             <h1

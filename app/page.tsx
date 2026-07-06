@@ -3,16 +3,21 @@ import HowItWorks from "@/components/HowItWorks";
 import Plates from "@/components/Plates";
 import About from "@/components/About";
 import Contact from "@/components/Contact";
+import Finale from "@/components/Finale";
+import Ambient from "@/components/Ambient";
 
 export default function Home() {
   return (
     <>
-      <main id="main">
+      <main id="main" className="relative">
+        <Ambient />
         <Hero />
         <HowItWorks />
         <Plates />
-        <About />
-        <Contact />
+        <Finale>
+          <About />
+          <Contact />
+        </Finale>
       </main>
       <footer className="border-t border-ink/15 px-6 py-8 md:px-10">
         <div className="mx-auto flex max-w-[74rem] flex-col gap-2 md:flex-row md:items-baseline md:justify-between">

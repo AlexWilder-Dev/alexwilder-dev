@@ -16,7 +16,24 @@ export default function SmoothScroll() {
     gsap.ticker.add(raf);
     gsap.ticker.lagSmoothing(0);
 
+    /* the drafting grid drifts almost imperceptibly against the content —
+       fixed element + transform, driven by rAF, so it costs nothing and
+       pauses with the tab */
+    const drift = gsap.to(".sheet-grid", {
+      y: -72,
+      ease: "none",
+      scrollTrigger: { start: 0, end: "max", scrub: 1 },
+    });
+
+    /* stage heights and fonts land after hydration; re-measure once settled */
+    const refresh = () => ScrollTrigger.refresh();
+    window.addEventListener("load", refresh);
+    document.fonts?.ready.then(refresh);
+
     return () => {
+      window.removeEventListener("load", refresh);
+      drift.scrollTrigger?.kill();
+      drift.kill();
       gsap.ticker.remove(raf);
       lenis.destroy();
     };
