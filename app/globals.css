@@ -1,0 +1,244 @@
+@import "tailwindcss";
+
+@theme inline {
+  --color-paper: #f2efe9;
+  --color-ink: #1c1b18;
+  --color-ink-soft: #55524b;
+  --color-underlay: #7fb4d6;
+  --color-seal: #c4482b;
+  /* annotation TEXT needs to pass contrast on paper; raw underlay (~2:1) is
+     for lines only — this is the same pencil, pressed harder */
+  --color-anno: #3e6b8a;
+  --font-display: var(--font-fraunces), Georgia, serif;
+  --font-body: var(--font-instrument), "Helvetica Neue", Arial, sans-serif;
+  --font-anno: var(--font-spline-mono), "Courier New", monospace;
+}
+
+html {
+  color-scheme: light only;
+  scroll-behavior: smooth;
+}
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+}
+
+/* Lenis smooth-scroll host styles */
+html.lenis,
+html.lenis body {
+  height: auto;
+}
+.lenis.lenis-smooth {
+  scroll-behavior: auto !important;
+}
+
+body {
+  background-color: var(--color-paper);
+  color: var(--color-ink);
+  font-family: var(--font-body);
+  font-size: 1.0625rem;
+  line-height: 1.65;
+  -webkit-font-smoothing: antialiased;
+}
+
+::selection {
+  background: var(--color-underlay);
+  color: var(--color-ink);
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-ink);
+  outline-offset: 3px;
+}
+
+/* the whole page sits on a drafting sheet — nothing rounder than 2px */
+* {
+  border-radius: 0;
+}
+
+/* ---- drafting-sheet ground: fixed construction grid, ~6% presence ---- */
+.sheet-grid {
+  position: fixed;
+  inset: 0;
+  z-index: -10;
+  pointer-events: none;
+  background-image: linear-gradient(
+      to right,
+      color-mix(in srgb, var(--color-underlay) 16%, transparent) 1px,
+      transparent 1px
+    ),
+    linear-gradient(
+      to bottom,
+      color-mix(in srgb, var(--color-underlay) 16%, transparent) 1px,
+      transparent 1px
+    ),
+    linear-gradient(
+      to right,
+      color-mix(in srgb, var(--color-underlay) 7%, transparent) 1px,
+      transparent 1px
+    ),
+    linear-gradient(
+      to bottom,
+      color-mix(in srgb, var(--color-underlay) 7%, transparent) 1px,
+      transparent 1px
+    );
+  background-size:
+    144px 144px,
+    144px 144px,
+    24px 24px,
+    24px 24px;
+}
+
+.grain {
+  position: fixed;
+  inset: 0;
+  z-index: 70;
+  pointer-events: none;
+  opacity: 0.045;
+  mix-blend-mode: multiply;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size: 240px 240px;
+}
+
+/* ---- annotation voice ----
+   layered so single-purpose utilities (normal-case, text-ink) can override */
+@layer components {
+  .anno {
+    font-family: var(--font-anno);
+    font-size: 0.72rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--color-anno);
+  }
+  .anno-line {
+    color: var(--color-underlay);
+  }
+}
+
+/* ---- display voice ---- */
+.wordmark {
+  font-family: var(--font-display);
+  font-variation-settings:
+    "opsz" 144,
+    "SOFT" 0,
+    "WONK" 1;
+  font-weight: 580;
+  letter-spacing: -0.015em;
+  line-height: 0.92;
+}
+.display {
+  font-family: var(--font-display);
+  font-variation-settings: "opsz" 72;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  line-height: 1.08;
+}
+
+/* ---- ink link: rule thickens on hover ---- */
+.ink-link {
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 4px;
+  text-decoration-color: var(--color-underlay);
+  transition:
+    text-decoration-thickness 120ms ease,
+    text-decoration-color 120ms ease;
+}
+.ink-link:hover {
+  text-decoration-thickness: 2px;
+  text-decoration-color: var(--color-ink);
+}
+
+/* ---- the maker's mark ---- */
+.seal {
+  position: relative;
+  display: inline-grid;
+  place-content: center;
+  gap: 0.15rem;
+  width: var(--seal-size, 5.75rem);
+  aspect-ratio: 1;
+  border: 2px solid var(--color-seal);
+  color: var(--color-seal);
+  rotate: -4deg;
+  mix-blend-mode: multiply;
+  text-align: center;
+  filter: url(#stamp-rough);
+}
+.seal::after {
+  content: "";
+  position: absolute;
+  inset: 3px;
+  border: 1px solid currentColor;
+  opacity: 0.75;
+}
+.seal .seal-aw {
+  font-family: var(--font-display);
+  font-variation-settings: "opsz" 40;
+  font-weight: 620;
+  font-size: calc(var(--seal-size, 5.75rem) * 0.36);
+  line-height: 1;
+}
+.seal .seal-est {
+  font-family: var(--font-anno);
+  font-size: calc(var(--seal-size, 5.75rem) * 0.085);
+  letter-spacing: 0.16em;
+}
+
+/* ---- SVG line-drawing layers; pathLength=1 lets one dash rule cover all ---- */
+.wire path,
+.leader path,
+.dim path,
+.pg-sketch path,
+.pg-ink path {
+  stroke-dasharray: 1;
+  stroke-dashoffset: 0; /* final state: fully drawn (no-JS / reduced-motion) */
+}
+
+/* ---- hero pre-hide: only when JS is live AND motion is welcome ---- */
+@media (prefers-reduced-motion: no-preference) {
+  .js .hero-anim {
+    opacity: 0;
+    visibility: hidden;
+  }
+  .js .hero-skip {
+    opacity: 1;
+  }
+}
+.hero-skip {
+  opacity: 0;
+  pointer-events: none;
+}
+.js .hero-skip {
+  pointer-events: auto;
+}
+@media (prefers-reduced-motion: reduce) {
+  .hero-skip {
+    display: none;
+  }
+}
+
+/* ---- closing CTA: the stamp presses when you reach for it ---- */
+.cta-seal .seal {
+  transition:
+    rotate 180ms ease,
+    scale 180ms ease;
+}
+.cta-seal:hover .seal {
+  rotate: -1deg;
+  scale: 0.97;
+}
+.cta-seal:active .seal {
+  scale: 0.94;
+}
+
+/* ---- plate frame lift ---- */
+.plate-frame {
+  transition:
+    translate 180ms ease,
+    box-shadow 180ms ease;
+}
+.plate-frame:hover {
+  translate: 0 -2px;
+  box-shadow: 6px 6px 0 color-mix(in srgb, var(--color-underlay) 35%, transparent);
+}
