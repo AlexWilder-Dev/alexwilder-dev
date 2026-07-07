@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from "react";
 import { gsap, prefersReduced } from "@/lib/anim";
+import { scrollToTarget } from "@/lib/lenis";
 import { buildScene, renderScene, type Box, type Scene } from "@/lib/sketch";
 import Seal from "./Seal";
 
@@ -215,11 +216,18 @@ export default function Hero() {
         role="presentation"
       />
 
-      <header className="hero-header hero-anim absolute inset-x-0 top-0 z-10 flex items-baseline justify-between px-6 py-5 md:px-10">
+      {/* z-20: must win hit-testing over the data-hero-drift content div below,
+          which spans the full section height (its own z-10) despite its
+          visible content sitting lower via justify-end */}
+      <header className="hero-header hero-anim absolute inset-x-0 top-0 z-20 flex items-baseline justify-between px-6 py-5 md:px-10">
         <p className="anno text-ink!">ALEXWILDER-DEV</p>
         <a
           ref={ctaRef}
-          href="mailto:alexwilder.dev@gmail.com"
+          href="#contact"
+          onClick={(e) => {
+            e.preventDefault();
+            scrollToTarget("#contact");
+          }}
           className="ink-link font-body text-sm text-ink"
         >
           Get in touch

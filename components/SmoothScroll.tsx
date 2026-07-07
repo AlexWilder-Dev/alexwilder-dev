@@ -3,12 +3,14 @@
 import { useEffect } from "react";
 import Lenis from "lenis";
 import { gsap, ScrollTrigger, prefersReduced } from "@/lib/anim";
+import { lenisRef } from "@/lib/lenis";
 
 export default function SmoothScroll() {
   useEffect(() => {
     if (prefersReduced()) return;
 
     const lenis = new Lenis({ duration: 1.1, autoRaf: false });
+    lenisRef.current = lenis;
     const onScroll = () => ScrollTrigger.update();
     lenis.on("scroll", onScroll);
 
@@ -36,6 +38,7 @@ export default function SmoothScroll() {
       drift.kill();
       gsap.ticker.remove(raf);
       lenis.destroy();
+      lenisRef.current = null;
     };
   }, []);
 
