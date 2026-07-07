@@ -1,11 +1,15 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import Image, { type StaticImageData } from "next/image";
 import { drawThread, gsap } from "@/lib/anim";
 import type { Pt } from "@/lib/sketch";
 import { threadX } from "@/lib/thread";
 import SectionHead from "./SectionHead";
 import ThreadSeg from "./ThreadSeg";
+import shotMarsh from "@/assets/images/marsh-harrier.webp";
+import shotNoko from "@/assets/images/noko.webp";
+import shotEffra from "@/assets/images/effra-hall-tavern.webp";
 
 /* wireframe path builders — everything is a <path> so pathLength/dash
    drawing works identically across browsers */
@@ -36,9 +40,11 @@ interface Callout {
 interface PlateData {
   n: string;
   name: string;
-  place: string;
+  label: string; // browser-chrome text; never a raw URL
   brief: string;
+  live: boolean;
   url: string;
+  shot: StaticImageData;
   flip: boolean;
   wire: string[];
   callouts: Callout[];
@@ -48,10 +54,12 @@ const PLATES: PlateData[] = [
   {
     n: "01",
     name: "The Marsh Harrier",
-    place: "Oxford",
+    label: "the marsh harrier",
     brief:
       "A pub site with a custom QR table-ordering system — scan at the table, and the kitchen has it before you’ve put your phone down.",
-    url: "themarshharrier.co.uk — demo",
+    live: true,
+    url: "https://marshharriercowley.co.uk",
+    shot: shotMarsh,
     flip: false,
     wire: [
       ...NAV,
@@ -66,10 +74,6 @@ const PLATES: PlateData[] = [
       r(660, 116, 22, 22),
       r(714, 116, 22, 22),
       r(660, 170, 22, 22),
-      r(694, 124, 6, 6),
-      r(668, 148, 6, 6),
-      r(722, 148, 6, 6),
-      r(694, 174, 6, 6),
       ln(652, 224, 744, 224),
       ln(652, 244, 728, 244),
       r(652, 300, 92, 26),
@@ -77,44 +81,48 @@ const PLATES: PlateData[] = [
       ln(24, 416, 224, 416),
     ],
     callouts: [
-      { text: "order-to-kitchen in one tap", mx: 87, my: 42 },
-      { text: "built for a Sunday rush", mx: 38, my: 60 },
+      { text: "order-to-kitchen in one tap", mx: 87, my: 7 },
+      { text: "built for a Sunday rush", mx: 27, my: 78 },
     ],
   },
   {
     n: "02",
-    name: "Effra Hall Tavern",
-    place: "Brixton",
+    name: "Noko",
+    label: "noko",
     brief:
-      "A Victorian pub with a contemporary crowd — the site had to hold both without blinking.",
-    url: "effrahalltavern.co.uk — demo",
+      "A pan-Asian kitchen and cocktail bar — three locations, one site, open late.",
+    live: false,
+    url: "https://alexwilder-dev.github.io/noko-site/",
+    shot: shotNoko,
     flip: true,
     wire: [
       ...NAV,
-      ...xr(24, 72, 752, 230),
-      ln(330, 170, 470, 170),
-      ln(360, 195, 440, 195),
-      r(24, 330, 364, 120),
-      ln(44, 362, 348, 362),
-      ln(44, 382, 308, 382),
-      ln(44, 402, 328, 402),
-      r(412, 330, 364, 120),
-      ln(432, 362, 736, 362),
-      ln(432, 382, 696, 382),
-      ln(432, 402, 716, 402),
+      ...xr(24, 72, 752, 240),
+      ln(60, 140, 330, 140),
+      ln(60, 175, 290, 175),
+      ln(60, 210, 240, 210),
+      r(60, 240, 70, 24),
+      r(142, 240, 58, 24),
+      r(212, 240, 92, 24),
+      r(600, 236, 150, 56),
+      r(24, 340, 752, 120),
+      ln(60, 380, 300, 380),
+      ln(60, 404, 260, 404),
     ],
     callouts: [
-      { text: "a Victorian house owned by a hip tech guy", mx: 50, my: 37 },
-      { text: "built in Astro, loads instantly", mx: 10, my: 6 },
+      { text: "three locations, one booking flow", mx: 9, my: 80 },
+      { text: "happy hour, front and centre", mx: 90, my: 84 },
     ],
   },
   {
     n: "03",
-    name: "Brotherton’s Brasserie",
-    place: "Woodstock",
+    name: "Effra Hall Tavern",
+    label: "the effra hall tavern",
     brief:
-      "A brasserie where what’s on matters as much as what’s cooking.",
-    url: "brothertons.co.uk — demo",
+      "A Victorian pub with a contemporary crowd — built in Astro, and it loads instantly.",
+    live: true,
+    url: "https://alexwilder-dev.github.io/effra-hall",
+    shot: shotEffra,
     flip: false,
     wire: [
       ...NAV,
@@ -137,8 +145,8 @@ const PLATES: PlateData[] = [
       "M320 384 Q334 388 331 402",
     ],
     callouts: [
-      { text: "live music every Wednesday, front and centre", mx: 40, my: 80 },
-      { text: "bookings via ResDiary", mx: 76, my: 54 },
+      { text: "a Victorian house owned by a hip tech guy", mx: 78, my: 50 },
+      { text: "built in Astro, loads instantly", mx: 13, my: 7 },
     ],
   },
 ];
@@ -184,12 +192,28 @@ function PlateBody({ p }: { p: PlateData }) {
               <path d="M2 1 L2 9" pathLength={1} />
               <path d="M118 1 L118 9" pathLength={1} />
             </svg>
+            <p className="anno ml-auto flex items-center gap-2">
+              <span
+                className={`inline-block h-1.5 w-1.5 ${
+                  p.live ? "bg-seal" : "border border-anno"
+                }`}
+                aria-hidden="true"
+              />
+              {p.live ? "LIVE" : "EXAMPLE"}
+            </p>
           </div>
           <h3 className="plate-title display mt-3 text-[clamp(1.8rem,3vw,2.5rem)] text-ink">
             {p.name}
-            <span className="text-ink-soft"> — {p.place}</span>
           </h3>
           <p className="mt-2 max-w-[56ch] text-ink-soft">{p.brief}</p>
+          <a
+            href={p.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="anno mt-5 inline-flex items-center gap-2 border-[1.5px] border-ink px-4 py-2 text-ink transition-colors duration-150 hover:bg-ink hover:text-paper"
+          >
+            View here <span aria-hidden="true">→</span>
+          </a>
         </div>
 
         <div className="plate-fit">
@@ -198,12 +222,13 @@ function PlateBody({ p }: { p: PlateData }) {
               <span className="h-2 w-2 border border-ink/60" aria-hidden="true" />
               <span className="h-2 w-2 border border-ink/60" aria-hidden="true" />
               <span className="h-2 w-2 border border-ink/60" aria-hidden="true" />
-              <span className="anno ml-3 normal-case">{p.url}</span>
+              <span className="anno ml-3 normal-case">{p.label}</span>
             </div>
-            <div className="relative aspect-[16/10]">
-              {/* TODO: replace with real screenshot */}
+            <div className="relative aspect-[2/1] overflow-hidden">
+              {/* the sketch underlay draws first; the real capture inks over it */}
               <svg
                 viewBox="0 0 800 500"
+                preserveAspectRatio="none"
                 className="wire absolute inset-0 h-full w-full"
                 aria-hidden="true"
                 fill="none"
@@ -217,6 +242,15 @@ function PlateBody({ p }: { p: PlateData }) {
                   <path key={d} d={d} pathLength={1} />
                 ))}
               </svg>
+              <div className="plate-shot absolute inset-0">
+                <Image
+                  src={p.shot}
+                  alt={`${p.name} — website screenshot`}
+                  fill
+                  className="object-cover"
+                  sizes="(min-width: 48rem) 62vw, 92vw"
+                />
+              </div>
               {p.callouts.map((c) => (
                 <svg
                   key={c.text}
@@ -226,8 +260,9 @@ function PlateBody({ p }: { p: PlateData }) {
                   className="marker absolute hidden md:block"
                   style={{ left: `${c.mx}%`, top: `${c.my}%` }}
                   aria-hidden="true"
-                  stroke="var(--color-anno)"
-                  strokeWidth={1.6}
+                  stroke="var(--color-paper)"
+                  strokeWidth={1.8}
+                  opacity={0.95}
                 >
                   <path d="M2 2 L10 10" />
                   <path d="M10 2 L2 10" />
@@ -260,7 +295,7 @@ function PlateBody({ p }: { p: PlateData }) {
   );
 }
 
-/* blue lines first, then ink, then the frame settles — one plate, ~1.6 units */
+/* blue lines draw, the capture inks over them, then the frame settles */
 function plateAssembly(el: Element): gsap.core.Timeline {
   const q = (s: string) => el.querySelectorAll(s);
   const tl = gsap.timeline({ defaults: { ease: "none" } });
@@ -274,7 +309,7 @@ function plateAssembly(el: Element): gsap.core.Timeline {
     .fromTo(
       q(".wire path"),
       { strokeDashoffset: 1 },
-      { strokeDashoffset: 0, duration: 0.85, stagger: 0.012 },
+      { strokeDashoffset: 0, duration: 0.8, stagger: 0.012 },
       0.15,
     )
     .fromTo(
@@ -289,12 +324,7 @@ function plateAssembly(el: Element): gsap.core.Timeline {
       { strokeDashoffset: 0, duration: 0.3, stagger: 0.08 },
       0.75,
     )
-    .fromTo(
-      q(".marker"),
-      { autoAlpha: 0, scale: 0.4 },
-      { autoAlpha: 1, scale: 1, duration: 0.2, stagger: 0.1 },
-      0.9,
-    )
+    .fromTo(q(".plate-shot"), { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.45 }, 0.95)
     .fromTo(
       q(".plate-frame, .plate-chrome"),
       { borderColor: "rgba(127,180,214,0.75)" },
@@ -312,11 +342,18 @@ function plateAssembly(el: Element): gsap.core.Timeline {
       { y: 16, rotate: 0.4 },
       { y: 0, rotate: 0, duration: 0.45, ease: "power1.out" },
       1.15,
+    )
+    .fromTo(
+      q(".marker"),
+      { autoAlpha: 0, scale: 0.4 },
+      { autoAlpha: 1, scale: 1, duration: 0.2, stagger: 0.1 },
+      1.45,
     );
   return tl;
 }
 
-/* the thread weaves behind the plates while they assemble and hand off */
+/* dives behind the opaque frame, loops the right margin, recrosses under
+   the callouts — fully exposed only while plates hand off */
 const platesAnchors = (w: number, h: number): Pt[] => {
   const tx = threadX(w);
   if (w < 768) {
@@ -326,8 +363,6 @@ const platesAnchors = (w: number, h: number): Pt[] => {
       { x: tx, y: h },
     ];
   }
-  /* dives behind the opaque frame, loops the right margin, recrosses under
-     the callouts — fully exposed only while plates hand off */
   return [
     { x: tx, y: 0 },
     { x: tx, y: h * 0.45 },
@@ -431,7 +466,7 @@ export default function Plates() {
               index="03"
               name="SELECTED WORK"
               title="The plates."
-              support="Three recent builds, drawn to scale. Screen captures pending — the linework holds their place."
+              support="Three recent builds, drawn to scale."
             />
           </div>
           <div className="plates-track">

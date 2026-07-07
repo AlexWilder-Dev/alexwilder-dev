@@ -61,7 +61,7 @@ export default function Contact() {
         </h2>
 
         <a
-          href="mailto:alex@alexwilder.dev"
+          href="mailto:alexwilder.dev@gmail.com"
           data-thread="seal"
           className="cta-seal group mt-12 inline-flex items-center gap-7"
           data-reveal
@@ -72,7 +72,7 @@ export default function Contact() {
               Get in touch
             </span>
             <span className="anno mt-2 block normal-case">
-              alex@alexwilder.dev
+              alexwilder.dev@gmail.com
             </span>
           </span>
         </a>

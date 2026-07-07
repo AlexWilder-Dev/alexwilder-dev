@@ -25,7 +25,7 @@ const splineMono = Spline_Sans_Mono({
 export const metadata: Metadata = {
   title: "Alex Wilder — I build your website before you've paid me a penny",
   description:
-    "Demo-first web design for pubs, restaurants and independents. Oxford · London · Leicester.",
+    "Demo-first web design. See it before you buy it. London-based, working everywhere.",
 };
 
 export const viewport: Viewport = {

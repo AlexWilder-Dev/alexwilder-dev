@@ -219,7 +219,7 @@ export default function Hero() {
         <p className="anno text-ink!">ALEXWILDER-DEV</p>
         <a
           ref={ctaRef}
-          href="mailto:alex@alexwilder.dev"
+          href="mailto:alexwilder.dev@gmail.com"
           className="ink-link font-body text-sm text-ink"
         >
           Get in touch
@@ -255,11 +255,8 @@ export default function Hero() {
             I build your website before you&rsquo;ve paid me a penny.
           </p>
           <p className="hero-sub hero-anim mt-4 max-w-[52ch] text-ink-soft">
-            Demo-first web design for pubs, restaurants and independents.{" "}
-            <span className="whitespace-nowrap">
-              Oxford <span className="text-underlay">·</span> London{" "}
-              <span className="text-underlay">·</span> Leicester.
-            </span>
+            Demo-first web design. See it before you buy it.
+            <span className="anno mt-2 block">London</span>
           </p>
         </div>
 

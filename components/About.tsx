@@ -90,15 +90,14 @@ export default function About() {
 
         <div className="md:col-span-7 md:col-start-6 md:pt-12" data-reveal>
           <p className="display text-[clamp(1.25rem,2vw,1.55rem)] leading-[1.5] text-ink">
-            I&rsquo;m Alex. I&rsquo;ve shipped close to a hundred websites —
-            most of them for places that serve food, pour beer, or take
-            bookings. I grew up in Leicester, learned the trade in London, and
-            work out of Oxford. I build fast because I&rsquo;ve done it a lot,
-            and I show you the work first because I&rsquo;d want the same. No
+            I&rsquo;m Alex. I build websites — most of them for places that
+            serve food, pour beer, or take bookings. I work from London, and I
+            work fast, because I&rsquo;ve done this a lot. I show you the work
+            before you spend anything, because I&rsquo;d want the same. No
             retainers, no jargon, no meetings that should have been emails. You
             deal with me, start to finish.
           </p>
-          <p className="anno mt-8">ALEX WILDER — OXFORD, 2026</p>
+          <p className="anno mt-8">ALEX WILDER — LONDON, 2026</p>
         </div>
         </div>
       </div>

@@ -23,8 +23,8 @@ Lenis · canvas 2D hero (no WebGL).
 
 ## Dropping in real content
 
-- Plate screenshots: `components/Plates.tsx` — each frame has a
-  `TODO: replace with real screenshot` marker; frames are 16:10.
+- Plate screenshots live in `assets/images/` (WebP, ~2:1) and are wired up in
+  `components/Plates.tsx`.
 - Portrait: `components/About.tsx` — `TODO: replace with real portrait`, 4:5.
 
 Every animation has a `prefers-reduced-motion` fallback that renders the

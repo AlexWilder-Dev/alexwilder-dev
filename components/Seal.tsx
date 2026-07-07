@@ -10,7 +10,7 @@ export default function Seal({ size = "5.75rem" }: { size?: string }) {
       aria-hidden="true"
     >
       <span className="seal-aw">AW</span>
-      <span className="seal-est">EST. OXFORD</span>
+      <span className="seal-est">EST. LONDON</span>
     </span>
   );
 }

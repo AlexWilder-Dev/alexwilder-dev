@@ -21,7 +21,7 @@ export default function Home() {
       </main>
       <footer className="border-t border-ink/15 px-6 py-8 md:px-10">
         <div className="mx-auto flex max-w-[74rem] flex-col gap-2 md:flex-row md:items-baseline md:justify-between">
-          <p className="anno">ALEXWILDER-DEV — OXFORD · LONDON · LEICESTER</p>
+          <p className="anno">ALEXWILDER-DEV — LONDON-BASED · WORKING EVERYWHERE</p>
           <p className="anno">© 2026 ALEX WILDER</p>
           <p className="anno">NO TRACKERS · NO COOKIES · JUST A MAILTO</p>
         </div>
