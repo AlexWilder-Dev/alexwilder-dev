@@ -233,6 +233,12 @@ body {
     inset: 0;
     display: flex;
     align-items: center;
+    /* stacked slide wrappers must not swallow clicks meant for the
+       visible plate below; hidden inners are unhittable anyway */
+    pointer-events: none;
+  }
+  .stage-sticky .plate-inner {
+    pointer-events: auto;
   }
   .stage-sticky .plate-slide + .plate-slide {
     margin-top: 0;
