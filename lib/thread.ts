@@ -36,7 +36,8 @@ export function threadD(
   anchors: Pt[],
   seed: number,
   amp = 2.4,
-  step = 15,
+  step = 22, // point density: coarser = cheaper stroke rasterization; the
+  // wobble survives fine at this spacing
 ): string {
   if (anchors.length < 2) return "";
   const pts: Pt[] = [];

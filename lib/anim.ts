@@ -23,13 +23,19 @@ export const drawThread = (
 ) => {
   const els = Array.from(targets) as SVGPathElement[];
   const state = { v: 1 };
+  let last = -1;
   els.forEach((p) => (p.style.strokeDashoffset = "1"));
   return gsap.to(state, {
     v: 0,
     ease: "none",
     ...vars,
     onUpdate() {
-      const s = String(state.v);
+      // quantize (~1.5px steps on a typical segment) and skip redundant
+      // writes — every dashoffset write invalidates paint on a large SVG
+      const q = Math.round(state.v * 2000) / 2000;
+      if (q === last) return;
+      last = q;
+      const s = String(q);
       els.forEach((p) => (p.style.strokeDashoffset = s));
     },
   });

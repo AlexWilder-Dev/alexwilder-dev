@@ -9,7 +9,9 @@ export default function SmoothScroll() {
   useEffect(() => {
     if (prefersReduced()) return;
 
-    const lenis = new Lenis({ duration: 1.1, autoRaf: false });
+    /* lerp-based smoothing tracks the wheel more tightly than duration
+       easing — duration mode reads as rubbery lag once frames get busy */
+    const lenis = new Lenis({ lerp: 0.12, autoRaf: false });
     lenisRef.current = lenis;
     const onScroll = () => ScrollTrigger.update();
     lenis.on("scroll", onScroll);

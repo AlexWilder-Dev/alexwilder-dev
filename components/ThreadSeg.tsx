@@ -85,8 +85,11 @@ export default function ThreadSeg({
       {/* paths render from the first paint (d filled in after measurement)
           so owning timelines can target them in their mount effects */}
       <g stroke={`url(#${gid})`} strokeLinecap="round" strokeLinejoin="round">
-        {/* wide faint pass under a firm narrow pass = pen weight */}
-        <path d={geo?.d ?? ""} pathLength={1} strokeWidth={4.6} opacity={0.16} />
+        {/* wide faint pass under a firm narrow pass = pen weight; the ghost
+            pass doubles paint cost, so mobile gets the firm stroke only */}
+        {(!geo || geo.w >= 768) && (
+          <path d={geo?.d ?? ""} pathLength={1} strokeWidth={4.6} opacity={0.16} />
+        )}
         <path d={geo?.d ?? ""} pathLength={1} strokeWidth={2.1} />
       </g>
     </svg>

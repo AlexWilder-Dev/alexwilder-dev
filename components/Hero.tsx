@@ -182,7 +182,11 @@ export default function Hero() {
         window.removeEventListener("pointerdown", onPointer);
         window.removeEventListener("wheel", onWheel);
         window.removeEventListener("touchmove", onWheel);
+        cleanupSkip = null;
       };
+      // once the intro has resolved the listeners are dead weight on every
+      // wheel/touch event — drop them
+      tl.eventCallback("onComplete", () => cleanupSkip?.());
 
       /* wait for the mono font so pencil labels don't swap mid-draw */
       const fontsReady =
